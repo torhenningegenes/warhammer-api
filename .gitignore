@@ -4,3 +4,9 @@
 # IDE specific files
 .idea/*
 .vscode/*
+
+# Crush
+CRUSH.md
+
+# Node modules
+node_modules/

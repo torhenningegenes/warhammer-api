@@ -1,0 +1,27 @@
+{
+  "name": "warhammer-api",
+  "version": "1.0.0",
+  "description": "Warhammer API with Node.js and Hono",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.6",
+    "drizzle-kit": "^0.31.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "dotenv": "^16.6.1",
+    "drizzle-orm": "^0.44.5",
+    "hono": "^4.10.3",
+    "postgres": "^3.4.5"
+  }
+}
