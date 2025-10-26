@@ -4,6 +4,11 @@ import { jwt } from "hono/jwt";
 import { logger } from 'hono/logger'
 import {createAuthToken} from "./auth/auth.helpers";
 import {serve} from "@hono/node-server";
+import {games} from "./db/schema/games";
+import {db} from "./db/client";
+import {gameSchema} from "./validation/games";
+import authRoutes from "./routes/auth.routes";
+import gamesRoutes from "./routes/games.routes";
 
 
 
@@ -18,22 +23,39 @@ app.use(
     }),
 );
 
-app.get("/", (c) => {
-    return c.text("In the grim darkness of the far future, there is only war.");
-});
+// Public routes
+app.get("/", (c) => c.text("In the grim darkness of the far future, there is only war."));
+app.get("/about", (c) => c.json({ message: "About Page" }));
 
-app.get("/about", (c) => {
-    return c.json({ message: "About Page" });
-});
+// Mount routes
+app.route("/auth", authRoutes);
+app.route("/games", gamesRoutes);
 
-app.get("/games", (c) => {
+app.get("/games", async (c) => {
     const user = c.get("jwtPayload"); // contains sub, role, exp etc.
-    console.log('user:', user);
+    const allGames = await db.select().from(games);
+
     return c.json({
-        games: ["Game1 -  Victory Druhkari", "Game2 - Victory Imperial Fists"],
+        games: allGames,
         user: `${user?.sub} with role ${user?.role}`,
     });
 });
+
+
+
+app.post("/games", async (c) => {
+    const json = await c.req.json();
+    const parseResult = gameSchema.safeParse(json);
+
+    if (!parseResult.success) {
+        return c.json({ error: "Invalid input", details: parseResult.error }, 400);
+    }
+
+    const result = await db.insert(games).values(parseResult.data).returning();
+    return c.json({ game: result });
+});
+
+
 
 app.post("/auth", createAuthToken);
 

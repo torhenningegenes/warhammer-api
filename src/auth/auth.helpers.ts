@@ -14,6 +14,6 @@ export const createAuthToken = async (c:  Context) => {
     }, 401);
   }
 
-  const token = await createToken({ sub: "admin", role: "admin" });
+   const token = await createToken({ sub: "admin", role: "admin" });
   return c.json({ token: `${token}` });
 };
