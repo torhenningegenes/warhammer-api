@@ -1,9 +1,11 @@
 import { Hono } from "hono";
-import { createToken, verifyToken } from "./auth/jwt.ts";
 import { createAuthToken } from "./auth/auth.helpers.ts";
 import { jwt } from "hono/jwt";
+import { logger } from 'hono/logger'
+
 
 const app = new Hono();
+app.use(logger())
 
 // Apply to all routes under /games (or globally if you want)
 app.use(
@@ -21,7 +23,7 @@ app.get("/about", (c) => {
   return c.json({ message: "About Page" });
 });
 
-app.get("/games", async (c) => {
+app.get("/games", (c) => {
   const user = c.get("jwtPayload"); // contains sub, role, exp etc.
 console.log('user:', user);
   return c.json({
