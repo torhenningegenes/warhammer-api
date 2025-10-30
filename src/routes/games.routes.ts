@@ -5,5 +5,6 @@ const router = new Hono();
 
 router.get("/", getGames);
 router.post("/", postGame);
+roter.get("/", getLeaderboard);
 
 export default router;

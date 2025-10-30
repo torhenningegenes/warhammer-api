@@ -23,3 +23,9 @@ export const postGame = async (c: Context) => {
     const result = await createGame(parseResult.data);
     return c.json({ game: result });
 };
+
+export const getLeaderboard = async (c: Context) => {
+    // Placeholder for leaderboard logic
+    const leaderboardData = []; // This would be fetched from a service or database
+    return c.json({ message: "Leaderboard endpoint not implemented yet." });
+}
