@@ -6,13 +6,27 @@ import { logger } from 'hono/logger'
 import { serve } from "@hono/node-server";
 import authRoutes from "./routes/auth.routes";
 import gamesRoutes from "./routes/games.routes";
+import factionsRoutes from "./routes/factions.routes";
+import playersRoutes from "./routes/players.routes";
 
 const app = new OpenAPIHono();
 app.use(logger())
 
-// Apply JWT auth to /games routes
+// Apply JWT auth to protected routes
 app.use(
     "/games/*",
+    jwt({
+        secret: process.env.JWT_SECRET_KEY!,
+    }),
+);
+app.use(
+    "/factions/*",
+    jwt({
+        secret: process.env.JWT_SECRET_KEY!,
+    }),
+);
+app.use(
+    "/players/*",
     jwt({
         secret: process.env.JWT_SECRET_KEY!,
     }),
@@ -25,6 +39,8 @@ app.get("/about", (c) => c.json({ message: "About Page" }));
 // Mount routes
 app.route("/auth", authRoutes);
 app.route("/games", gamesRoutes);
+app.route("/factions", factionsRoutes);
+app.route("/players", playersRoutes);
 
 // OpenAPI spec
 app.doc("/doc", {
