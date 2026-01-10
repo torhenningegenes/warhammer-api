@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { getAllGames, createGame } from "../services/games.service";
+import { getAllGames, createGame, getLeaderboard as getLeaderboardService } from "../services/games.service";
 import { gameSchema } from "../validation/games";
 
 export const getGames = async (c: Context) => {
@@ -25,7 +25,6 @@ export const postGame = async (c: Context) => {
 };
 
 export const getLeaderboard = async (c: Context) => {
-    // Placeholder for leaderboard logic
-    const leaderboardData = [{id: 1, factions: ['drukhari', 'orcs'], winner: ['drukhari']}, {id: 2, factions: ['space marines', 'orcs'], winner: ['orcs']}]; // This would be fetched from a service or database
-    return c.json({ message: "Leaderboard endpoint not implemented yet." });
+    const leaderboard = await getLeaderboardService();
+    return c.json({ leaderboard });
 }

@@ -1,25 +1,20 @@
 import 'dotenv/config';
-import { Hono } from "hono";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { swaggerUI } from "@hono/swagger-ui";
 import { jwt } from "hono/jwt";
 import { logger } from 'hono/logger'
-import {createAuthToken} from "./auth/auth.helpers";
-import {serve} from "@hono/node-server";
-import {games} from "./db/schema/games";
-import {db} from "./db/client";
-import {gameSchema} from "./validation/games";
+import { serve } from "@hono/node-server";
 import authRoutes from "./routes/auth.routes";
 import gamesRoutes from "./routes/games.routes";
 
-
-
-const app = new Hono();
+const app = new OpenAPIHono();
 app.use(logger())
 
-// Apply to all routes under /games (or globally if you want)
+// Apply JWT auth to /games routes
 app.use(
     "/games/*",
     jwt({
-        secret: process.env.JWT_SECRET_KEY!, // required
+        secret: process.env.JWT_SECRET_KEY!,
     }),
 );
 
@@ -31,33 +26,26 @@ app.get("/about", (c) => c.json({ message: "About Page" }));
 app.route("/auth", authRoutes);
 app.route("/games", gamesRoutes);
 
-app.get("/games", async (c) => {
-    const user = c.get("jwtPayload"); // contains sub, role, exp etc.
-    const allGames = await db.select().from(games);
-
-    return c.json({
-        games: allGames,
-        user: `${user?.sub} with role ${user?.role}`,
-    });
+// OpenAPI spec
+app.doc("/doc", {
+    openapi: "3.0.0",
+    info: {
+        title: "Warhammer Game Tracker API",
+        version: "1.0.0",
+        description: "API for tracking Warhammer games",
+    },
+    security: [{ Bearer: [] }],
 });
 
-
-
-app.post("/games", async (c) => {
-    const json = await c.req.json();
-    const parseResult = gameSchema.safeParse(json);
-
-    if (!parseResult.success) {
-        return c.json({ error: "Invalid input", details: parseResult.error }, 400);
-    }
-
-    const result = await db.insert(games).values(parseResult.data).returning();
-    return c.json({ game: result });
+// Register security scheme
+app.openAPIRegistry.registerComponent("securitySchemes", "Bearer", {
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT",
 });
 
-
-
-app.post("/auth", createAuthToken);
+// Swagger UI
+app.get("/docs", swaggerUI({ url: "/doc" }));
 
 serve({
     fetch: app.fetch,
@@ -65,3 +53,4 @@ serve({
 });
 
 console.log(`Server running on http://localhost:${process.env.PORT || 3000}`);
+console.log(`Swagger UI: http://localhost:${process.env.PORT || 3000}/docs`);
